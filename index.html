@@ -68,6 +68,10 @@
         Submit Application
       </button>
     </form>
+
+    <div id="countdownMessage" class="text-center text-green-600 font-semibold mt-4 hidden">
+      Redirecting to homepage in <span id="countdown">3</span> seconds...
+    </div>
   </div>
 
   <script>
@@ -85,9 +89,18 @@
       }).then(response => {
         if (response.ok) {
           alert("Thank you! Your application has been submitted.");
-          setTimeout(() => {
-            window.location.href = window.location.origin;
-          }, 3000);
+          document.getElementById("countdownMessage").classList.remove("hidden");
+
+          let seconds = 3;
+          const countdownEl = document.getElementById("countdown");
+          const countdownInterval = setInterval(() => {
+            seconds--;
+            countdownEl.textContent = seconds;
+            if (seconds <= 0) {
+              clearInterval(countdownInterval);
+              window.location.href = window.location.origin;
+            }
+          }, 1000);
         } else {
           alert("Oops! Something went wrong. Please try again.");
         }
@@ -96,3 +109,4 @@
   </script>
 </body>
 </html>
+
