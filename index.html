@@ -14,7 +14,7 @@
 </head>
 
 <body class="bg-gray-100 p-4">
-  <div class="max-w-3xl mx-auto">
+  <div id="mainContent" class="max-w-3xl mx-auto">
     <h1 class="text-3xl font-bold mb-6 text-center">Employment Vacancies</h1>
 
     <!-- Job Listings -->
@@ -68,10 +68,12 @@
         Submit Application
       </button>
     </form>
+  </div>
 
-    <div id="countdownMessage" class="text-center text-green-600 font-semibold mt-4 hidden">
-      Redirecting to homepage in <span id="countdown">3</span> seconds...
-    </div>
+  <!-- Thank You Message -->
+  <div id="thankYou" class="max-w-3xl mx-auto text-center bg-white p-8 rounded shadow hidden">
+    <h2 class="text-2xl font-bold text-green-600 mb-2">Thank you for submitting your application!</h2>
+    <p>You will be redirected to the homepage in <span id="countdown">3</span> seconds...</p>
   </div>
 
   <script>
@@ -88,8 +90,9 @@
         }
       }).then(response => {
         if (response.ok) {
-          alert("Thank you! Your application has been submitted.");
-          document.getElementById("countdownMessage").classList.remove("hidden");
+          document.getElementById("mainContent").classList.add("hidden");
+          const thankYou = document.getElementById("thankYou");
+          thankYou.classList.remove("hidden");
 
           let seconds = 3;
           const countdownEl = document.getElementById("countdown");
@@ -109,4 +112,3 @@
   </script>
 </body>
 </html>
-
