@@ -1,113 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Laitkam Upload</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="bg-gray-100 min-h-screen flex items-center justify-center">
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-      
-      <!-- Logo and Title -->
-      <div class="flex flex-col items-center mb-6">
-        <img src="laitkamlogo.png" alt="Laitkam Logo" class="h-20 w-auto mb-2" />
-        <h1 class="text-3xl font-bold text-center">Laitkam</h1>
-      </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Job Vacancies</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .preview-item {
+      position: relative;
+      display: inline-block;
+    }
+    .remove-btn {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: red;
+      color: white;
+      border-radius: 9999px;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 2px 6px;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-4">
+  <div class="max-w-3xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6 text-center">Employment Vacancies</h1>
 
-      <form id="uploadForm" enctype="multipart/form-data">
-        <input
-          type="file"
-          id="fileInput"
-          name="file"
-          accept="image/*,application/pdf"
-          class="mb-4 w-full"
-          onchange="handleFileChange(event)"
-        />
-        <div id="preview" class="mb-4 flex flex-wrap gap-4"></div>
-        <button
-          type="submit"
-          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
-        >
-          Upload
-        </button>
-        <p id="error" class="text-red-500 text-sm mt-2 hidden"></p>
-      </form>
+    <!-- Job Listings -->
+    <div class="space-y-4 mb-8">
+      <div class="bg-white p-4 rounded shadow">
+        <h2 class="text-xl font-semibold">Lower Division Assistant</h2>
+        <p>Vacancies: 10</p>
+        <p>Last Date: 10 August 2025</p>
+        <p>Qualification: Class 12 Passed</p>
+      </div>
+      <div class="bg-white p-4 rounded shadow">
+        <h2 class="text-xl font-semibold">Peon</h2>
+        <p>Vacancies: 5</p>
+        <p>Last Date: 10 August 2025</p>
+        <p>Qualification: Class 8 Passed</p>
+      </div>
     </div>
 
-    <script>
-      const form = document.getElementById("uploadForm");
-      const preview = document.getElementById("preview");
-      const fileInput = document.getElementById("fileInput");
-      const error = document.getElementById("error");
+    <!-- Application Form -->
+    <form class="bg-white p-6 rounded shadow space-y-4"
+          action="https://formspree.io/f/mkgzrjde"
+          method="POST"
+          enctype="multipart/form-data"
+          onsubmit="handleFormSubmit(event)">
+      <h2 class="text-2xl font-bold mb-4">Apply Now</h2>
 
-      fileInput.addEventListener("click", () => {
-        // Clear preview and reset when clicking upload again
-        preview.innerHTML = "";
-        error.classList.add("hidden");
-        fileInput.value = ""; // Reset input value
+      <input class="w-full p-2 border border-gray-300 rounded" type="text" name="name" placeholder="Full Name" required>
+      <input class="w-full p-2 border border-gray-300 rounded" type="tel" name="phone" placeholder="Phone Number" required>
+      <input class="w-full p-2 border border-gray-300 rounded" type="email" name="email" placeholder="Email Address" required>
+
+      <select class="w-full p-2 border border-gray-300 rounded" name="post" required>
+        <option value="">Select Post</option>
+        <option value="Lower Division Assistant">Lower Division Assistant</option>
+        <option value="Peon">Peon</option>
+      </select>
+
+      <label class="block mt-4">Upload CV + Documents (images or PDF, max 500KB each):</label>
+      <div id="dropzone" class="w-full border-2 border-dashed border-gray-300 p-4 text-center rounded cursor-pointer bg-gray-50">
+        <p>Drag and drop files here or tap to select</p>
+        <input id="fileInput" type="file" name="documents" accept="image/*,.pdf" capture="environment"
+               multiple class="hidden" onchange="previewFiles(this.files)">
+      </div>
+
+      <div id="preview" class="mt-4 flex flex-wrap gap-2"></div>
+      <p id="error" class="text-red-500 text-sm mt-2"></p>
+
+      <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" type="submit">Submit Application</button>
+    </form>
+  </div>
+
+  <script>
+    const MAX_SIZE = 500 * 1024;
+    const fileInput = document.getElementById('fileInput');
+    const dropzone = document.getElementById('dropzone');
+    const preview = document.getElementById('preview');
+    const error = document.getElementById('error');
+    let filesArray = [];
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropzone.classList.add('bg-blue-100');
+    });
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('bg-blue-100');
+    });
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropzone.classList.remove('bg-blue-100');
+      previewFiles(e.dataTransfer.files);
+    });
+
+    function previewFiles(fileList) {
+      error.textContent = "";
+      Array.from(fileList).forEach(file => {
+        if (file.size > MAX_SIZE && file.type.startsWith("image/")) {
+          compressImage(file, 0.7).then(compressedFile => {
+            if (compressedFile.size <= MAX_SIZE) {
+              filesArray.push(compressedFile);
+              showPreview(compressedFile);
+            } else {
+              error.textContent = `Even after compression, "${file.name}" exceeds 500KB.`;
+            }
+          });
+        } else if (file.size <= MAX_SIZE) {
+          filesArray.push(file);
+          showPreview(file);
+        } else {
+          error.textContent = `File "${file.name}" is too large (max 500KB).`;
+        }
       });
+    }
 
-      function handleFileChange(event) {
-        preview.innerHTML = "";
-        const file = event.target.files[0];
-        if (!file) return;
+    function showPreview(file) {
+      const item = document.createElement("div");
+      item.className = "preview-item";
 
-        if (file.size > 500 * 1024) {
-          error.textContent = "File too large. Max 500KB.";
-          error.classList.remove("hidden");
-          return;
-        }
+      const removeBtn = document.createElement("div");
+      removeBtn.className = "remove-btn";
+      removeBtn.textContent = "✕";
+      removeBtn.onclick = () => {
+        preview.removeChild(item);
+        filesArray = filesArray.filter(f => f !== file);
+      };
 
-        error.classList.add("hidden");
+      item.appendChild(removeBtn);
 
-        if (file.type.startsWith("image/")) {
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = e => {
           const img = document.createElement("img");
-          img.src = URL.createObjectURL(file);
-          img.className = "h-32 object-contain border rounded p-1";
-
-          const crossBtn = document.createElement("button");
-          crossBtn.textContent = "❌";
-          crossBtn.className = "text-red-500 ml-2";
-          crossBtn.onclick = (e) => {
-            e.preventDefault();
-            preview.innerHTML = "";
-            fileInput.value = "";
-          };
-
-          const wrapper = document.createElement("div");
-          wrapper.className = "flex items-center gap-2";
-          wrapper.appendChild(img);
-          wrapper.appendChild(crossBtn);
-
-          preview.appendChild(wrapper);
-        } else if (file.type === "application/pdf") {
-          const pdfText = document.createElement("p");
-          pdfText.textContent = file.name;
-          pdfText.className = "text-sm font-medium";
-
-          const crossBtn = document.createElement("button");
-          crossBtn.textContent = "❌";
-          crossBtn.className = "text-red-500 ml-2";
-          crossBtn.onclick = (e) => {
-            e.preventDefault();
-            preview.innerHTML = "";
-            fileInput.value = "";
-          };
-
-          const wrapper = document.createElement("div");
-          wrapper.className = "flex items-center gap-2";
-          wrapper.appendChild(pdfText);
-          wrapper.appendChild(crossBtn);
-
-          preview.appendChild(wrapper);
-        }
+          img.src = e.target.result;
+          img.className = "h-24 object-cover border rounded";
+          item.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        const note = document.createElement("p");
+        note.textContent = `PDF: ${file.name}`;
+        note.className = "text-sm text-gray-600";
+        item.appendChild(note);
       }
 
-      form.addEventListener("submit", function (e) {
-        e.preventDefault();
-        alert("File uploaded successfully (simulated).");
+      preview.appendChild(item);
+    }
+
+    async function compressImage(file, quality) {
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = event => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const scale = 500 / img.width;
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(blob => {
+              const newFile = new File([blob], file.name, { type: file.type });
+              resolve(newFile);
+            }, file.type, quality);
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
       });
-    </script>
-  </body>
+    }
+
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+
+      filesArray.forEach(file => {
+        formData.append('documents', file);
+      });
+
+      fetch(form.action, {
+        method: form.method,
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+      }).then(response => {
+        if (response.ok) {
+          alert("Thank you! Your application has been submitted.");
+          form.reset();
+          preview.innerHTML = "";
+          filesArray = [];
+        } else {
+          alert("Oops! Something went wrong. Please try again.");
+        }
+      });
+    }
+  </script>
+</body>
 </html>
+
