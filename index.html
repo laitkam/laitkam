@@ -4,111 +4,85 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Job Vacancies</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-
-  <!-- Uploadcare Widget -->
   <script>
-    UPLOADCARE_PUBLIC_KEY = '8e4b55a12a698dc8ade4'; // Replace with your Uploadcare public key
-  </script>
-  <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
-</head>
-
-<body class="bg-gray-100 p-4">
-  <div id="mainContent" class="max-w-3xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6 text-center">Employment Vacancies</h1>
-
-    <!-- Job Listings -->
-    <div class="space-y-4 mb-8">
-      <div class="bg-white p-4 rounded shadow">
-        <h2 class="text-xl font-semibold">Lower Division Assistant</h2>
-        <p>Vacancies: 10</p>
-        <p>Last Date: 10 August 2025</p>
-        <p>Qualification: Class 12 Passed</p>
-      </div>
-      <div class="bg-white p-4 rounded shadow">
-        <h2 class="text-xl font-semibold">Peon</h2>
-        <p>Vacancies: 5</p>
-        <p>Last Date: 10 August 2025</p>
-        <p>Qualification: Class 8 Passed</p>
-      </div>
-    </div>
-
-    <!-- Application Form -->
-    <form class="bg-white p-6 rounded shadow space-y-4"
-          action="https://formspree.io/f/mkgzrjde"
-          method="POST"
-          onsubmit="handleSubmit(event)">
-      <h2 class="text-2xl font-bold mb-4">Apply Now</h2>
-
-      <input class="w-full p-2 border border-gray-300 rounded" type="text" name="name" placeholder="Full Name" required>
-      <input class="w-full p-2 border border-gray-300 rounded" type="tel" name="phone" placeholder="Phone Number" required>
-      <input class="w-full p-2 border border-gray-300 rounded" type="email" name="email" placeholder="Email Address" required>
-
-      <select class="w-full p-2 border border-gray-300 rounded" name="post" required>
-        <option value="">Select Post</option>
-        <option value="Lower Division Assistant">Lower Division Assistant</option>
-        <option value="Peon">Peon</option>
-      </select>
-
-      <!-- Uploadcare PDF Upload -->
-      <label class="block mt-4 font-medium">Send CV (PDF only):</label>
-      <input 
-        type="hidden"
-        role="uploadcare-uploader"
-        name="send_cv"
-        data-clearable
-        data-images-only="false"
-        data-multiple="false"
-        data-accept="application/pdf"
-        data-tabs="file camera url"
-        data-max-size="500000"
-      />
-
-      <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" type="submit">
-        Submit Application
-      </button>
-    </form>
-  </div>
-
-  <!-- Thank You Message -->
-  <div id="thankYou" class="max-w-3xl mx-auto text-center bg-white p-8 rounded shadow hidden">
-    <h2 class="text-2xl font-bold text-green-600 mb-2">Thank you for submitting your application!</h2>
-    <p>You will be redirected to the homepage in <span id="countdown">3</span> seconds...</p>
-  </div>
-
-  <script>
-    function handleSubmit(event) {
-      event.preventDefault();
-      const form = event.target;
-      const formData = new FormData(form);
-
-      fetch(form.action, {
-        method: form.method,
-        body: formData,
-        headers: {
-          'Accept': 'application/json'
+    function updateTotal() {
+      const checkboxes = document.querySelectorAll('input[name="post"]:checked');
+      const total = checkboxes.length * 300;
+      document.getElementById('totalFee').textContent = `Total Fee: ₹${total}`;
+      document.getElementById('submitBtn').disabled = checkboxes.length === 0 || !document.getElementById('paymentConfirm').checked;
+    }
+    function toggleSubmit() {
+      updateTotal();
+    }
+    function showThankYou() {
+      document.getElementById("formSection").style.display = "none";
+      document.getElementById("thankYou").style.display = "block";
+      let countdown = 3;
+      const interval = setInterval(() => {
+        document.getElementById("countdown").textContent = countdown;
+        countdown--;
+        if (countdown < 0) {
+          clearInterval(interval);
+          window.location.href = "/";
         }
-      }).then(response => {
-        if (response.ok) {
-          document.getElementById("mainContent").classList.add("hidden");
-          const thankYou = document.getElementById("thankYou");
-          thankYou.classList.remove("hidden");
-
-          let seconds = 3;
-          const countdownEl = document.getElementById("countdown");
-          const countdownInterval = setInterval(() => {
-            seconds--;
-            countdownEl.textContent = seconds;
-            if (seconds <= 0) {
-              clearInterval(countdownInterval);
-              window.location.href = window.location.origin;
-            }
-          }, 1000);
-        } else {
-          alert("Oops! Something went wrong. Please try again.");
-        }
-      });
+      }, 1000);
     }
   </script>
+  <script>
+    UPLOADCARE_PUBLIC_KEY = 'demopublickey';
+  </script>
+  <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded shadow">
+    <div id="formSection">
+      <h1 class="text-xl font-bold mb-4">Job Vacancies - Submit Your CV</h1>
+      <form action="https://formspree.io/f/mkgzrjde" method="POST" onsubmit="showThankYou(); return false;">
+        <label class="block mb-2">Your email:
+          <input type="email" name="email" required class="w-full p-2 border border-gray-300 rounded" />
+        </label>
+
+        <fieldset class="mb-4">
+          <legend class="font-medium mb-2">Select Posts:</legend>
+          <label class="block"><input type="checkbox" name="post" value="Post A" onchange="updateTotal()" /> Post A</label>
+          <label class="block"><input type="checkbox" name="post" value="Post B" onchange="updateTotal()" /> Post B</label>
+          <label class="block"><input type="checkbox" name="post" value="Post C" onchange="updateTotal()" /> Post C</label>
+        </fieldset>
+
+        <div id="totalFee" class="font-semibold mb-4">Total Fee: ₹0</div>
+
+        <div class="mb-4">
+          <h2 class="font-medium">Pay Application Fee</h2>
+          <p>₹300 per post</p>
+          <p>UPI ID: <strong>9862189403@okbizaxis</strong></p>
+          <img src="https://raw.githubusercontent.com/your-username/your-repo/main/upi_payment_qr.png" alt="UPI QR Code" class="my-2 w-40 h-40" />
+        </div>
+
+        <div class="mb-4">
+          <label class="block font-medium">Upload Your CV (PDF only):</label>
+          <input type="hidden" role="uploadcare-uploader" name="cv" data-clearable data-images-only="false" data-tabs="file url" data-accept="application/pdf"/>
+        </div>
+
+        <div class="mb-4">
+          <label class="block font-medium">Upload Payment Screenshot (JPG only):</label>
+          <input type="hidden" role="uploadcare-uploader" name="payment_screenshot" data-clearable data-images-only="true" data-accept="image/jpeg" />
+        </div>
+
+        <div class="mb-4">
+          <label><input type="checkbox" id="paymentConfirm" onchange="toggleSubmit()" /> I confirm that I have paid the application fee.</label>
+        </div>
+
+        <button id="submitBtn" type="submit" class="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50" disabled>
+          Submit
+        </button>
+      </form>
+    </div>
+
+    <div id="thankYou" class="text-center hidden">
+      <h2 class="text-2xl font-bold">Thank you for submitting!</h2>
+      <p>Redirecting to homepage in <span id="countdown">3</span> seconds...</p>
+    </div>
+  </div>
 </body>
 </html>
